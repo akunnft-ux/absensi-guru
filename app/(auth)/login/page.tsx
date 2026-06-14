@@ -12,17 +12,21 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    setLoading(false);
-    if (error) {
-      alert(error.message);
-    } else {
-      window.location.href = "/admin/units";
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) {
+        alert("Login gagal: " + error.message);
+      } else {
+        window.location.href = "/admin/units";
+      }
+    } catch (err: any) {
+      alert("Error: " + (err?.message || err));
     }
+    setLoading(false);
   };
 
   return (
