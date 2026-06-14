@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export default async function UnitsPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: units, error } = await supabase.from("units").select("*");
 
   if (error) {

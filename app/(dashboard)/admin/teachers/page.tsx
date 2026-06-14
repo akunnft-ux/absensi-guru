@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 
 export default async function TeachersPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: teachers, error } = await supabase.from("teachers").select("*, units(name)");
 
   if (error) {
