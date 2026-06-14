@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 
 export default async function TeachersPage() {
