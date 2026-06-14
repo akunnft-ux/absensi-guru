@@ -1,4 +1,15 @@
--- 4.1 Profiles
+-- 4.2 Units (no dependencies)
+create table public.units (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  code text unique,
+  address text,
+  timezone text not null default 'Asia/Jakarta',
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- 4.1 Profiles (depends on units)
 create table public.profiles (
   id uuid primary key references auth.users on delete cascade,
   name text not null,
@@ -10,18 +21,7 @@ create table public.profiles (
   updated_at timestamptz default now()
 );
 
--- 4.2 Units
-create table public.units (
-  id uuid primary key default gen_random_uuid(),
-  name text not null,
-  code text unique,
-  address text,
-  timezone text not null default 'Asia/Jakarta',
-  created_at timestamptz default now(),
-  updated_at timestamptz default now()
-);
-
--- 4.3 Teachers
+-- 4.3 Teachers (depends on units)
 create table public.teachers (
   id uuid primary key default gen_random_uuid(),
   unit_id uuid references units(id) on delete cascade,
@@ -36,7 +36,7 @@ create table public.teachers (
   updated_at timestamptz default now()
 );
 
--- 4.4 Activities
+-- 4.4 Activities (depends on units, self-referential)
 create table public.activities (
   id uuid primary key default gen_random_uuid(),
   unit_id uuid references units(id),
@@ -56,7 +56,7 @@ create table public.activities (
   updated_at timestamptz default now()
 );
 
--- 4.5 Piket Schedules
+-- 4.5 Piket Schedules (depends on activities, teachers)
 create table public.piket_schedules (
   id uuid primary key default gen_random_uuid(),
   activity_id uuid references activities(id) on delete cascade,
@@ -70,7 +70,24 @@ create table public.piket_schedules (
   updated_at timestamptz default now()
 );
 
--- 4.6 Attendances
+-- 4.7 Substitutes (depends on piket_schedules, teachers, profiles)
+create table public.substitutes (
+  id uuid primary key default gen_random_uuid(),
+  original_schedule_id uuid references piket_schedules(id),
+  original_teacher_id uuid references teachers(id),
+  substitute_teacher_id uuid references teachers(id) not null,
+  substitute_date date not null,
+  reason text,
+  type text check (type in ('person', 'day')),
+  status text default 'pending'
+    check (status in ('pending', 'approved', 'rejected')),
+  approved_by uuid references profiles(id),
+  approved_at timestamptz,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- 4.6 Attendances (depends on piket_schedules, teachers, substitutes)
 create table public.attendances (
   id uuid primary key default gen_random_uuid(),
   schedule_id uuid references piket_schedules(id),
@@ -88,20 +105,3 @@ create table public.attendances (
 alter table public.attendances
   add constraint uq_attendance_schedule_teacher
   unique (schedule_id, teacher_id);
-
--- 4.7 Substitutes
-create table public.substitutes (
-  id uuid primary key default gen_random_uuid(),
-  original_schedule_id uuid references piket_schedules(id),
-  original_teacher_id uuid references teachers(id),
-  substitute_teacher_id uuid references teachers(id) not null,
-  substitute_date date not null,
-  reason text,
-  type text check (type in ('person', 'day')),
-  status text default 'pending'
-    check (status in ('pending', 'approved', 'rejected')),
-  approved_by uuid references profiles(id),
-  approved_at timestamptz,
-  created_at timestamptz default now(),
-  updated_at timestamptz default now()
-);
