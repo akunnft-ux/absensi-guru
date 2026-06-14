@@ -9,12 +9,12 @@ export async function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        async getAll() {
-          return (await cookieStore).getAll();
+        getAll() {
+          return cookieStore.getAll();
         },
-        async setAll(cookiesToSet) {
+        setAll(cookiesToSet) {
           try {
-            (await cookieStore).set(cookiesToSet);
+            cookieStore.set(cookiesToSet);
           } catch {
             // The `setAll` method was called from a Server Component.
           }
